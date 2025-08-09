@@ -1,3 +1,11 @@
+import dotenv from "dotenv"
+dotenv.config()
+
+// Import listeners
+import "./listeners/wompiPayoutListener"
+import "./listeners/wompiPayoutEmailListener"
+
+// Import app
 import app from "./index"
 
 app.listen(3000, () => {
