@@ -1,17 +1,23 @@
 import { eventBus } from "../lib/eventBus"
-import { db } from "../lib/firabase"
+
+import { generateLogs } from "../lib/generateUserLogs"
 
 eventBus.on("wompi.payout.success.send.mail", (event) => {
-  db.collection("payouts")
-    .doc(event.legal_id)
-    .collection("logs")
-    .doc("send_email")
-    .set({
+  generateLogs(
+    {
+      legal_id: event.transactionId,
+      email: event.customer_email,
+      name: event.customer_name,
+    },
+    {
       event: "send_email",
       status: "success",
       metadata: {
         legal_id: event.legal_id,
       },
       createdAt: new Date(),
-    })
+    },
+    "send_email",
+    event.transactionId
+  )
 })

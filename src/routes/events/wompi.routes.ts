@@ -38,24 +38,39 @@ wompiRouter.post("/payouts", (req: Request<{}, {}, WompiPayoutEvent>, res) => {
     transactionStatus,
     transactionAmount,
     isVerified,
-    legal_id: req.body.data.transaction.customer_data.legal_id,
+    user_id:
+      req.body.data.transaction.customer_data.customer_references[1]?.value.replace(
+        " ",
+        ""
+      ),
     signature: req.body.signature,
+    customer_id: req.body.data.transaction.customer_data.legal_id,
     customer_email: req.body.data.transaction.customer_email,
+    user_email:
+      req.body.data.transaction.customer_data.customer_references[0]?.value.replace(
+        " ",
+        ""
+      ),
     customer_name: req.body.data.transaction.customer_data.full_name,
+    transaction_link: req.body.data.transaction.payment_link_id,
+    phoneNumber: req.body.data.transaction.customer_data.phone_number,
   }
 
   eventBus.emit("wompi.payout.received", transactionData)
 
-  eventBus.emit("wompi.payout.success.send.mail", {
-    legal_id: transactionData.legal_id,
-  })
+  if (transactionStatus !== "APPROVED") {
+    return res.status(200).send("Event received")
+  }
 
   eventBus.emit("firebase.create.user", {
-    legal_id: transactionData.legal_id,
+    legal_id: transactionData.user_id,
     name: transactionData.customer_name,
-    email: transactionData.customer_email,
-    password: transactionData.legal_id,
+    email: transactionData.user_email,
+    password: transactionData.user_id,
+    transactionId: transactionData.transactionId,
   })
+
+  eventBus.emit("wompi.payout.success.send.mail", transactionData)
 
   res.status(200).send("Event received")
 })
