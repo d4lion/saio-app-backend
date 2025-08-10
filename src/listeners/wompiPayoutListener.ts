@@ -7,8 +7,6 @@ import { WompiPayoutEvent } from "../interfaces/IWompi"
 eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
   const { data } = event
 
-  console.log(event)
-
   const { transaction } = data
 
   db.collection("payouts")
@@ -33,7 +31,14 @@ eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
         id: transaction.id,
         link: transaction.payment_link_id,
         status: transaction.status,
-        amount: transaction.amount_in_cents,
+        payment: {
+          method: transaction.payment_method.type,
+          description: transaction.payment_method.payment_description,
+          amount: transaction.amount_in_cents,
+        },
+        created_at: transaction.created_at,
+        finalized_at: transaction.finalized_at,
+        reference: transaction.reference,
       },
       timestamp: event.timestamp,
       signature: event.signature,
