@@ -1,23 +1,21 @@
 import { eventBus } from "../lib/eventBus"
 
-import { generateLogs } from "../lib/generateUserLogs"
+// Interface
+import { WompiPayoutEvent } from "../interfaces/IWompi"
 
-eventBus.on("wompi.payout.success.send.mail", (event) => {
-  generateLogs(
-    {
-      legal_id: event.transactionId,
-      email: event.customer_email,
-      name: event.customer_name,
-    },
-    {
-      event: "send_email",
-      status: "success",
-      metadata: {
-        legal_id: event.legal_id,
-      },
-      createdAt: new Date(),
-    },
-    "send_email",
-    event.transactionId
-  )
+// Email service
+import { sendMail } from "../lib/sendMail"
+
+eventBus.on("wompi.payout.success.send.mail", (event: WompiPayoutEvent) => {
+  const email =
+    event.data.transaction.customer_data.customer_references[0]?.value.replace(
+      " ",
+      ""
+    )
+
+  if (!email) {
+    return
+  }
+
+  sendMail.sendEmail("saio.com", email, "Prueba", "Hola cuerpo de la prueba")
 })
