@@ -1,78 +1,42 @@
 import { eventBus } from "../lib/eventBus"
 import { db } from "../lib/firabase"
 
-import { generateLogs } from "../lib/generateUserLogs"
-
-interface WompiPayoutEvent {
-  timeStamp: number
-  transactionId: string
-  transactionStatus: string
-  transactionAmount: number
-  isVerified: boolean
-  user_id: string
-  signature: string
-  customer_email: string
-  customer_name: string
-  customer_id: string
-  user_email: string
-  transaction_link: string
-}
+// Interface
+import { WompiPayoutEvent } from "../interfaces/IWompi"
 
 eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
-  const {
-    timeStamp,
-    transactionId,
-    transactionStatus,
-    transactionAmount,
-    isVerified,
-    user_id,
-    customer_email,
-    customer_name,
-    customer_id,
-    user_email,
-    transaction_link,
-  } = event
+  const { data } = event
+
+  console.log(event)
+
+  const { transaction } = data
 
   db.collection("payouts")
-    .doc(transactionId)
+    .doc(transaction.id)
     .set({
       customer: {
-        email: customer_email,
-        name: customer_name,
-        id: customer_id,
+        email: transaction.customer_email,
+        name: transaction.customer_data.full_name,
+        id: transaction.customer_data.legal_id,
       },
       user: {
-        id: user_id,
-        email: user_email,
+        id: transaction.customer_data.customer_references[1]?.value.replace(
+          " ",
+          ""
+        ),
+        email: transaction.customer_data.customer_references[0]?.value.replace(
+          " ",
+          ""
+        ),
       },
       transaction: {
-        id: transactionId,
-        link: transaction_link,
-        status: transactionStatus,
-        amount: transactionAmount,
-        is_verified: isVerified,
+        id: transaction.id,
+        link: transaction.payment_link_id,
+        status: transaction.status,
+        amount: transaction.amount_in_cents,
       },
-      timestamp: timeStamp,
+      timestamp: event.timestamp,
       signature: event.signature,
       createdAt: new Date(),
     })
-
-  generateLogs(
-    {
-      legal_id: user_id,
-      email: customer_email,
-      name: customer_name,
-    },
-    {
-      event: "register_payout",
-      status: "success",
-      metadata: {
-        legal_id: user_id,
-        amount: transactionAmount,
-      },
-      createdAt: new Date(),
-    },
-    "register_payout",
-    transactionId
-  )
 })

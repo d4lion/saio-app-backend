@@ -21,7 +21,7 @@ export interface Transaction {
   currency: string
   payment_method_type: string
   payment_method: PaymentMethod
-  status: string
+  status: "APPROVED" | "VOIDED" | "DECLINED" | "ERROR"
   status_message: any
   shipping_address: any
   redirect_url: string
