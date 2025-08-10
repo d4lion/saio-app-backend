@@ -35,7 +35,8 @@ export interface Transaction {
 export interface PaymentMethod {
   type: string
   extra: Extra
-  phone_number: string
+  user_type: string
+  payment_description: string
 }
 
 export interface Extra {
