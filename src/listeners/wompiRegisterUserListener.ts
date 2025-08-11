@@ -51,7 +51,7 @@ eventBus.on("wompi.event.firebase.create.user", (event: WompiPayoutEvent) => {
           status: transaction.status,
           payment: {
             method: transaction.payment_method.type,
-            description: transaction.payment_method.payment_description,
+            description: transaction.payment_method,
             amount: transaction.amount_in_cents,
             link_id: transaction.payment_link_id,
           },
@@ -68,7 +68,6 @@ eventBus.on("wompi.event.firebase.create.user", (event: WompiPayoutEvent) => {
       db.collection("logs").add({
         error: error.errorInfo,
         email,
-        userId: error.code.split("/")[1],
         createdAt: new Date(),
       })
 

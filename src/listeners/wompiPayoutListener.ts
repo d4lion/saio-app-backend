@@ -51,9 +51,20 @@ eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
       signature: event.signature,
       createdAt: new Date(),
     })
+    .then(() => {
+      logger.info("Payout saved: " + event.data.transaction.id)
+    })
+    .catch((error) => {
+      logger.error(error)
+    })
 })
 
 eventBus.on("wompi.payout.declined", (event: WompiPayoutEvent) => {
   logger.warn("Payout declined: " + event.data.transaction.id)
-  db.collection("declined-payouts").doc(event.data.transaction.id).set(event)
+  db.collection("declined-payouts")
+    .doc(event.data.transaction.id)
+    .set(event)
+    .then(() => {
+      logger.info("Payout declined saved: " + event.data.transaction.id)
+    })
 })
