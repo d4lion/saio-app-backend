@@ -1,6 +1,10 @@
+import { createLogger } from "../lib/logger"
+
+const logger = createLogger("EMAIL SERVICE")
+
 class EmailService {
   constructor() {
-    console.log("Email service initialized")
+    logger.info("Email service initialized")
   }
 
   sendEmail(from: string, to: string, subject: string, body: string) {

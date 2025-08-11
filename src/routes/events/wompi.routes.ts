@@ -38,6 +38,12 @@ const middleware = (
     return res.status(200).send("Invalid payment link")
   }
 
+  if (transaction.status == "DECLINED") {
+    eventBus.emit("wompi.payout.declined", WompiRequest)
+
+    return res.status(200).send("Payment declined")
+  }
+
   if (transaction.status !== "APPROVED") {
     return res.status(200).send("Payment not approved")
   }

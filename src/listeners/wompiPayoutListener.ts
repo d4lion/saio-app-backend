@@ -4,6 +4,13 @@ import { db } from "../lib/firabase"
 // Interface
 import { WompiPayoutEvent } from "../interfaces/IWompi"
 
+// Logger
+import { createLogger } from "../lib/logger"
+
+const logger = createLogger("WOMPI PAYOUT LISTENER")
+
+logger.info("Initialized")
+
 eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
   const { data } = event
 
@@ -33,7 +40,7 @@ eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
         status: transaction.status,
         payment: {
           method: transaction.payment_method.type,
-          description: transaction.payment_method.payment_description,
+          description: transaction.payment_method,
           amount: transaction.amount_in_cents,
         },
         created_at: transaction.created_at,
@@ -44,4 +51,9 @@ eventBus.on("wompi.payout.received", (event: WompiPayoutEvent) => {
       signature: event.signature,
       createdAt: new Date(),
     })
+})
+
+eventBus.on("wompi.payout.declined", (event: WompiPayoutEvent) => {
+  logger.warn("Payout declined: " + event.data.transaction.id)
+  db.collection("declined-payouts").doc(event.data.transaction.id).set(event)
 })

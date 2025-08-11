@@ -4,6 +4,13 @@ import { auth, db } from "../lib/firabase"
 // Interface
 import { WompiPayoutEvent } from "../interfaces/IWompi"
 
+// Logger
+import { createLogger } from "../lib/logger"
+
+const logger = createLogger("WOMPI CREATE USER LISTENER")
+
+logger.info("Initialized")
+
 eventBus.on("wompi.event.firebase.create.user", (event: WompiPayoutEvent) => {
   const { data } = event
   const { transaction } = data
@@ -56,5 +63,15 @@ eventBus.on("wompi.event.firebase.create.user", (event: WompiPayoutEvent) => {
       }
 
       db.collection("users").doc(user.uid).set(userObject)
+    })
+    .catch((error) => {
+      db.collection("logs").add({
+        error: error.errorInfo,
+        email,
+        userId: error.code.split("/")[1],
+        createdAt: new Date(),
+      })
+
+      logger.error(error)
     })
 })
